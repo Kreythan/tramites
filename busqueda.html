@@ -88,7 +88,7 @@
 
 <script>
     // URL DE TU GOOGLE APPS SCRIPT (Copia aquí la URL que termina en /exec)
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbxYQ2HTU3W-lzNHbfif4ogLt0YC0jbL5OJEkW8oMKkJjGGzEo9zhAzZKLxqU1P5Sc3r/exec'; 
+    const scriptURL = 'https://script.google.com/macros/s/AKfycby0jNiBOBqycATVsLZZdMHPQECfIp8TeX8K--BltZMcB-ZNrqFtYK8R0mZfpxUV-2wi/exec'; 
     
     let datosGlobales = [];
     let encabezadosGlobales = [];
@@ -211,35 +211,39 @@ async function guardarCambios() {
 }
 
 async function guardarCambios() {
-    const id = document.getElementById('edit_id').value;
     const data = {
         action: "update",
-        id: id,
+        id: document.getElementById('edit_id').value,
         nombre_cliente: document.getElementById('edit_nombre').value,
         placa: document.getElementById('edit_placa').value,
+        dra_g: document.getElementById('edit_dra_g').value,
+        dn_victor: document.getElementById('edit_dn_victor').value,
+        observaciones: document.getElementById('edit_obs').value, // Verifica que el ID sea edit_obs
         soloEstado: false
-        // Añade aquí los demás campos que necesites editar
     };
+
     await fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
     document.getElementById('modalEditor').style.display = 'none';
+    alert("Registro actualizado.");
     cargarDatos();
 }
 
     // Función para actualizar el estado (Concluido/Proceso)
     async function cambiarEstado(id, nuevoEstado) {
-        const confirmacion = confirm(`¿Cambiar el estado del registro Nº ${id} a "${nuevoEstado}"?`);
-        if (!confirmacion) { cargarDatos(); return; }
-
-        try {
-            await fetch(scriptURL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify({ action: "update", id: id, estado: nuevoEstado })
-            });
-            // Recargamos datos para aplicar el cambio de color
-            setTimeout(cargarDatos, 500);
-        } catch (e) { alert("Error al actualizar el estado."); }
-    }
+    // Ya no recargamos todo el objeto, solo enviamos el ID y el nuevo estado
+    await fetch(scriptURL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({ 
+            action: "update", 
+            id: id, 
+            estado: nuevoEstado, 
+            soloEstado: true 
+        })
+    });
+    // Pequeña pausa para que Google procese y recargamos la tabla
+    setTimeout(cargarDatos, 500);
+}
 
     // Función para eliminar un registro
     async function eliminarFila(id) {
@@ -324,6 +328,7 @@ async function guardarCambios() {
  </div>
 </body>
 </html>
+
 
 
 
