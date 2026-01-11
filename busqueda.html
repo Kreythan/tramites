@@ -37,22 +37,20 @@
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwXg_ig4L4y2bL8E7aOaup07wFmSppftBY1i3211rUVwwd0cXZ6NkWkjYGW_GQpPoBg/exec';
     let datosGlobales = [];
 
+   // ... (Mantén el resto del código igual, solo cambia esta parte)
+
     async function cargarDatos() {
         try {
             const resp = await fetch(scriptURL);
             const data = await resp.json();
             
             if (data && data.length > 0) {
-                datosGlobales = data.slice(1); // Quitamos la fila de encabezados
-                renderTable(data[0], datosGlobales);
-            } else {
-                document.getElementById('cuerpoTabla').innerHTML = "<tr><td colspan='11'>No se encontraron datos.</td></tr>";
+                const headers = data[0];
+                // Invertimos el orden para que lo más reciente salga primero
+                datosGlobales = data.slice(1).reverse(); 
+                renderTable(headers, datosGlobales);
             }
-        } catch (error) {
-            console.error("Error cargando datos:", error);
-            document.getElementById('cuerpoTabla').innerHTML = "<tr><td colspan='11'>Error de conexión. Verifica que el Script de Google esté publicado como 'Cualquiera'.</td></tr>";
-        }
-    }
+// ... (Continúa el código)
 
     function renderTable(headers, rows) {
         const headerRow = document.getElementById('header');
@@ -85,4 +83,5 @@
 </body>
 
 </html>
+
 
