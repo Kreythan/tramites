@@ -35,6 +35,17 @@
         .concluido { background-color: #d4edda !important; color: #155724; font-weight: 500; }
         .status-select { padding: 6px; border-radius: 6px; font-size: 12px; border: 1px solid #ccc; cursor: pointer; }
 
+        /* Estilos para el Modal de Edición */
+        #modalEditor {
+            display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: white; margin: 5% auto; padding: 20px; border-radius: 15px; width: 400px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-content input, .modal-content select { width: 100%; padding: 8px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
+
         @media print {
             .filters, .header-actions .btn, .btn-del, .status-select, .stats { display: none !important; }
             .container { box-shadow: none; width: 100%; padding: 0; }
@@ -98,30 +109,63 @@
     }
 
     // Función para dibujar la tabla
-    function renderTable(headers, rows) {
-        const headerRow = document.getElementById('headerRow');
-        // Aseguramos que siempre haya una columna de Acciones al final
-        headerRow.innerHTML = headers.map(h => `<th>${h}</th>`).join('') + "<th>Estado y Gestión</th>";
-        
-        const cuerpo = document.getElementById('cuerpoTabla');
-        cuerpo.innerHTML = rows.map(row => {
-            const id = row[0]; // Nº de registro
-            const estadoActual = row[11] || "En proceso"; // Columna L (índice 11)
-            const claseFila = (estadoActual === "Concluido") ? "class='concluido'" : "";
+  function renderTable(headers, rows) {
+    const headerRow = document.getElementById('headerRow');
+    headerRow.innerHTML = headers.map(h => `<th>${h}</th>`).join('') + "<th>Gestión</th>";
+    
+    const cuerpo = document.getElementById('cuerpoTabla');
+    cuerpo.innerHTML = rows.map(row => {
+        const id = row[0];
+        const estadoActual = row[11] || "En proceso";
+        const claseFila = (estadoActual === "Concluido") ? "class='concluido'" : "";
 
-            return `<tr ${claseFila}>
-                ${row.map(cell => `<td>${cell || ''}</td>`).join('')}
-                <td style="display:flex; gap:8px; align-items:center;">
-                    <select class="status-select" onchange="cambiarEstado(${id}, this.value)">
-                        <option value="En proceso" ${estadoActual === 'En proceso' ? 'selected' : ''}>⏳ Proceso</option>
-                        <option value="Concluido" ${estadoActual === 'Concluido' ? 'selected' : ''}>✅ Concluido</option>
-                    </select>
-                    <button class="btn btn-del" onclick="eliminarFila(${id})" title="Eliminar Registro">🗑️</button>
-                </td>
-            </tr>`;
-        }).join('');
-        document.getElementById('contador').innerText = rows.length;
-    }
+        return `<tr ${claseFila}>
+            ${row.map(cell => `<td>${cell || ''}</td>`).join('')}
+            <td style="display:flex; gap:5px;">
+                <select class="status-select" onchange="cambiarEstado(${id}, this.value)">
+                    <option value="En proceso" ${estadoActual === 'En proceso' ? 'selected' : ''}>⏳</option>
+                    <option value="Concluido" ${estadoActual === 'Concluido' ? 'selected' : ''}>✅</option>
+                </select>
+                <button class="btn btn-edit" style="background:#1a73e8; color:white;" onclick='abrirEditor(${JSON.stringify(row)})'>✏️</button>
+                <button class="btn btn-del" onclick="eliminarFila(${id})">🗑️</button>
+            </td>
+        </tr>`;
+    }).join('');
+    document.getElementById('contador').innerText = rows.length;
+}
+
+// Nueva función para actualizar solo el estado sin crear filas
+async function cambiarEstado(id, nuevoEstado) {
+    await fetch(scriptURL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({ action: "update", id: id, estado: nuevoEstado, soloEstado: true })
+    });
+    setTimeout(cargarDatos, 1000);
+}
+
+// Lógica para abrir el editor con los datos de la fila
+function abrirEditor(datos) {
+    document.getElementById('edit_id').value = datos[0];
+    document.getElementById('edit_nombre').value = datos[4];
+    document.getElementById('edit_placa').value = datos[3];
+    document.getElementById('modalEditor').style.display = 'block';
+}
+
+async function guardarCambios() {
+    const id = document.getElementById('edit_id').value;
+    const data = {
+        action: "update",
+        id: id,
+        nombre_cliente: document.getElementById('edit_nombre').value,
+        placa: document.getElementById('edit_placa').value,
+        soloEstado: false
+        // Añade aquí los demás campos que necesites editar
+    };
+    await fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+    document.getElementById('modalEditor').style.display = 'none';
+    cargarDatos();
+}
 
     // Función para actualizar el estado (Concluido/Proceso)
     async function cambiarEstado(id, nuevoEstado) {
@@ -185,3 +229,4 @@
 </script>
 </body>
 </html>
+
