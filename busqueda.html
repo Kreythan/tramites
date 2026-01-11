@@ -101,11 +101,16 @@
 
     function renderTable(headers, rows) {
         document.getElementById('headerRow').innerHTML = headers.map(h => `<th>${h}</th>`).join('');
-        document.getElementById('cuerpoTabla').innerHTML = rows.map(row => 
-            `<tr>${row.map(cell => `<td>${cell || ''}</td>`).join('')}</tr>`
-        ).join('');
+        const cuerpo = document.getElementById('cuerpoTabla');
         
-        // Actualiza el contador
+        cuerpo.innerHTML = rows.map(row => {
+            return `<tr>${row.map((cell, index) => {
+                // Si es la primera columna (Nº), aseguramos que sea un entero
+                let valor = (index === 0) ? parseInt(cell) || cell : cell;
+                return `<td>${valor}</td>`;
+            }).join('')}</tr>`;
+        }).join('');
+        
         document.getElementById('contador').innerText = rows.length;
     }
 
@@ -139,5 +144,6 @@
 </script>
 </body>
 </html>
+
 
 
