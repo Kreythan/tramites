@@ -2,86 +2,112 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Pagina 2 de Busqueda</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Búsqueda y Reportes</title>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f8f9fa; }
-        .filters { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; background: white; padding: 20px; border-radius: 10px; }
-        .filter-group { display: flex; flex-direction: column; }
-        input { padding: 8px; border-radius: 15px; border: 1px solid #ccc; }
-        table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background: #1a73e8; color: white; }
-        tr:nth-child(even) { background: #f2f2f2; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        
+        .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        h2 { color: #1a73e8; margin: 0; }
+        
+        /* Estilo de Botones */
+        .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 14px; }
+        .btn-home { background: #5f6368; color: white; }
+        .btn-print { background: #34a853; color: white; }
+        .btn-excel { background: #fbbc05; color: #333; }
+        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
+
+        .filters { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; background: #f1f4f9; padding: 20px; border-radius: 12px; }
+        .filter-group { display: flex; flex-direction: column; flex: 1; min-width: 180px; }
+        .filter-group label { font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #1a73e8; }
+        .filter-group input { padding: 10px; border: 1px solid #ccc; border-radius: 8px; outline: none; }
+
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: left; }
+        th { background: #1a73e8; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background: #f9f9f9; }
+
+        @media print {
+            .filters, .header-actions .btn-home, .header-actions .btn-excel { display: none; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; }
+        }
     </style>
 </head>
 <body>
 
-<h2>Pagina 2 de Busqueda</h2>
-<div class="filters">
-    <div class="filter-group"><label>Buscar por fecha</label><input type="text" id="f_fecha" onkeyup="filtrar()"></div>
-    <div class="filter-group"><label>Buscar por Placa</label><input type="text" id="f_placa" onkeyup="filtrar()"></div>
-    <div class="filter-group"><label>Buscar por Nombre</label><input type="text" id="f_nombre" onkeyup="filtrar()"></div>
+<div class="container">
+    <div class="header-actions">
+        <a href="index.html" class="btn btn-home">🏠 Inicio</a>
+        <h2>Pagina 2 de Busqueda</h2>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="exportarExcel()" class="btn btn-excel">📊 Excel</button>
+            <button onclick="window.print()" class="btn btn-print">🖨️ Imprimir PDF</button>
+        </div>
+    </div>
+
+    <div class="filters">
+        <div class="filter-group"><label>Fecha</label><input type="text" id="f_fecha" onkeyup="filtrar()"></div>
+        <div class="filter-group"><label>Placa</label><input type="text" id="f_placa" onkeyup="filtrar()"></div>
+        <div class="filter-group"><label>Nombre</label><input type="text" id="f_nombre" onkeyup="filtrar()"></div>
+    </div>
+
+    <div class="table-container">
+        <table id="tablaDatos">
+            <thead><tr id="headerRow"></tr></thead>
+            <tbody id="cuerpoTabla"></tbody>
+        </table>
+    </div>
 </div>
 
-<table id="tablaDatos">
-    <thead>
-        <tr id="header"></tr>
-    </thead>
-    <tbody id="cuerpoTabla">
-        <tr><td colspan="11">Cargando datos de Google Sheets...</td></tr>
-    </tbody>
-</table>
-
 <script>
-    // Asegúrate de que no haya ningún carácter antes de 'const'
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwXg_ig4L4y2bL8E7aOaup07wFmSppftBY1i3211rUVwwd0cXZ6NkWkjYGW_GQpPoBg/exec';
     let datosGlobales = [];
-
-   // ... (Mantén el resto del código igual, solo cambia esta parte)
+    let encabezadosGlobales = [];
 
     async function cargarDatos() {
         try {
-            const resp = await fetch(scriptURL);
-            const data = await resp.json();
-            
+            const respuesta = await fetch(scriptURL);
+            const data = await respuesta.json();
             if (data && data.length > 0) {
-                const headers = data[0];
-                // Invertimos el orden para que lo más reciente salga primero
-                datosGlobales = data.slice(1).reverse(); 
-                renderTable(headers, datosGlobales);
+                encabezadosGlobales = data[0];
+                datosGlobales = data.slice(1).filter(row => row.join('').trim() !== '').reverse(); 
+                renderTable(encabezadosGlobales, datosGlobales);
             }
-// ... (Continúa el código)
+        } catch (e) {
+            document.getElementById('cuerpoTabla').innerHTML = "<tr><td colspan='11'>Error al cargar datos.</td></tr>";
+        }
+    }
 
     function renderTable(headers, rows) {
-        const headerRow = document.getElementById('header');
-        headerRow.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
-        
-        const cuerpo = document.getElementById('cuerpoTabla');
-        cuerpo.innerHTML = rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('');
+        document.getElementById('headerRow').innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+        document.getElementById('cuerpoTabla').innerHTML = rows.map(row => 
+            `<tr>${row.map(cell => `<td>${cell || ''}</td>`).join('')}</tr>`
+        ).join('');
     }
 
     function filtrar() {
-        const fFecha = document.getElementById('f_fecha').value.toLowerCase();
-        const fPlaca = document.getElementById('f_placa').value.toLowerCase();
-        const fNombre = document.getElementById('f_nombre').value.toLowerCase();
-
-        const filtrados = datosGlobales.filter(row => {
-            // Buscamos en las columnas: Fecha (1), Placa (3) y Nombre (4)
-            return (row[1] && row[1].toString().toLowerCase().includes(fFecha)) &&
-                   (row[3] && row[3].toString().toLowerCase().includes(fPlaca)) &&
-                   (row[4] && row[4].toString().toLowerCase().includes(fNombre));
-        });
-
-        // Los encabezados manuales por si acaso el filtro los necesita
-        const headers = ["ID/Registro", "Fecha", "Hora", "Placa", "Nombre Cliente", "Dra G", "Metodo Pago 1", "Dn Victor", "Metodo Pago 2", "Saldo", "Obs"];
-        renderTable(headers, filtrados);
+        const fF = document.getElementById('f_fecha').value.toLowerCase();
+        const fP = document.getElementById('f_placa').value.toLowerCase();
+        const fN = document.getElementById('f_nombre').value.toLowerCase();
+        const filtrados = datosGlobales.filter(row => 
+            (row[1]||'').toString().toLowerCase().includes(fF) && 
+            (row[3]||'').toString().toLowerCase().includes(fP) && 
+            (row[4]||'').toString().toLowerCase().includes(fN)
+        );
+        renderTable(encabezadosGlobales, filtrados);
     }
 
-    // Iniciar la carga
-    cargarDatos();
+    function exportarExcel() {
+        const table = document.getElementById("tablaDatos");
+        const wb = XLSX.utils.table_to_book(table, {sheet: "Registros"});
+        XLSX.writeFile(wb, "Reporte_Registros.xlsx");
+    }
+
+    window.onload = cargarDatos;
 </script>
 </body>
-
 </html>
-
-
