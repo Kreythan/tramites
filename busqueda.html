@@ -65,6 +65,10 @@
         📊 Registros encontrados: <span id="contador">0</span>
     </div>
 
+<div style="margin-bottom: 10px; font-weight: bold; color: #1a73e8;">
+    Registros encontrados: <span id="contador">0</span>
+</div>
+    
     <div class="table-container">
         <table id="tablaDatos">
             <thead><tr id="headerRow"></tr></thead>
@@ -100,6 +104,8 @@
         document.getElementById('cuerpoTabla').innerHTML = rows.map(row => 
             `<tr>${row.map(cell => `<td>${cell || ''}</td>`).join('')}</tr>`
         ).join('');
+        
+        // Actualiza el contador
         document.getElementById('contador').innerText = rows.length;
     }
 
@@ -133,3 +139,4 @@
 </script>
 </body>
 </html>
+
