@@ -20,6 +20,12 @@
         .btn-clear { background: #ea4335; color: white; padding: 8px 12px; font-size: 12px; }
         .btn:hover { opacity: 0.8; transform: translateY(-1px); }
 
+
+        .btn-del { background: #ea4335; color: white; padding: 5px 10px; font-size: 11px; }
+        .btn-edit { background: #1a73e8; color: white; padding: 5px 10px; font-size: 11px; }
+        .status-select { padding: 5px; border-radius: 5px; font-size: 11px; }
+        .concluido { background-color: #d4edda !important; } /* Fila verde si está terminado */
+
         .filters { display: flex; gap: 15px; margin-bottom: 10px; flex-wrap: wrap; background: #f1f4f9; padding: 20px; border-radius: 12px; align-items: flex-end; }
         .filter-group { display: flex; flex-direction: column; flex: 1; min-width: 180px; }
         .filter-group label { font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #1a73e8; }
@@ -79,71 +85,57 @@
     </div>
 </div>
 
+
+
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbz-QI2NIypWdWNgdDmRWkd9P8n48pZ_13ZZn7-jjaGdAntx3v4ybWCoPcKoCXeQ2YgT/exec';
-    let datosGlobales = [];
-    let encabezadosGlobales = [];
+function renderTable(headers, rows) {
+    const headerRow = document.getElementById('headerRow');
+    // Añadimos la columna de Acciones al encabezado si no existe
+    headerRow.innerHTML = headers.map(h => `<th>${h}</th>`).join('') + "<th>Acciones</th>";
+    
+    const cuerpo = document.getElementById('cuerpoTabla');
+    cuerpo.innerHTML = rows.map(row => {
+        const id = row[0];
+        const estadoActual = row[11] || "En proceso";
+        const claseFila = (estadoActual === "Concluido") ? "class='concluido'" : "";
 
-    async function cargarDatos() {
-        try {
-            const respuesta = await fetch(scriptURL);
-            const data = await respuesta.json();
-            if (data && data.length > 0) {
-                encabezadosGlobales = data[0];
-                // Invertimos el orden (lo más nuevo arriba) y quitamos filas vacías
-                datosGlobales = data.slice(1).filter(row => row.join('').trim() !== '').reverse(); 
-                renderTable(encabezadosGlobales, datosGlobales);
-            }
-        } catch (e) {
-            document.getElementById('cuerpoTabla').innerHTML = "<tr><td colspan='11' style='color:red; text-align:center;'>Error al conectar con Google Sheets.</td></tr>";
-        }
-    }
+        return `<tr ${claseFila}>
+            ${row.map(cell => `<td>${cell || ''}</td>`).join('')}
+            <td>
+                <select class="status-select" onchange="cambiarEstado(${id}, this.value)">
+                    <option value="En proceso" ${estadoActual === 'En proceso' ? 'selected' : ''}>⏳ Proceso</option>
+                    <option value="Concluido" ${estadoActual === 'Concluido' ? 'selected' : ''}>✅ Listo</option>
+                </select>
+                <button class="btn btn-del" onclick="eliminarFila(${id})">🗑️</button>
+            </td>
+        </tr>`;
+    }).join('');
+    document.getElementById('contador').innerText = rows.length;
+}
 
-    function renderTable(headers, rows) {
-        document.getElementById('headerRow').innerHTML = headers.map(h => `<th>${h}</th>`).join('');
-        const cuerpo = document.getElementById('cuerpoTabla');
-        
-        cuerpo.innerHTML = rows.map(row => {
-            return `<tr>${row.map((cell, index) => {
-                // Si es la primera columna (Nº), aseguramos que sea un entero
-                let valor = (index === 0) ? parseInt(cell) || cell : cell;
-                return `<td>${valor}</td>`;
-            }).join('')}</tr>`;
-        }).join('');
-        
-        document.getElementById('contador').innerText = rows.length;
-    }
+async function eliminarFila(id) {
+    if(!confirm("¿Seguro que quieres eliminar el registro Nº " + id + "?")) return;
+    await fetch(scriptURL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({ action: "delete", id: id })
+    });
+    alert("Eliminado. La página se recargará.");
+    location.reload();
+}
 
-    function filtrar() {
-        const fF = document.getElementById('f_fecha').value.toLowerCase();
-        const fP = document.getElementById('f_placa').value.toLowerCase();
-        const fN = document.getElementById('f_nombre').value.toLowerCase();
-        
-        const filtrados = datosGlobales.filter(row => 
-            (row[1]||'').toString().toLowerCase().includes(fF) && 
-            (row[3]||'').toString().toLowerCase().includes(fP) && 
-            (row[4]||'').toString().toLowerCase().includes(fN)
-        );
-        renderTable(encabezadosGlobales, filtrados);
-    }
-
-    function limpiarFiltros() {
-        document.getElementById('f_fecha').value = "";
-        document.getElementById('f_placa').value = "";
-        document.getElementById('f_nombre').value = "";
-        renderTable(encabezadosGlobales, datosGlobales);
-    }
-
-    function exportarExcel() {
-        const table = document.getElementById("tablaDatos");
-        const wb = XLSX.utils.table_to_book(table, {sheet: "Historial"});
-        XLSX.writeFile(wb, "Reporte_Sistema.xlsx");
-    }
-
-    window.onload = cargarDatos;
+async function cambiarEstado(id, nuevoEstado) {
+    await fetch(scriptURL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({ action: "update", id: id, estado: nuevoEstado })
+    });
+    location.reload(); // Recargamos para que se pinte de verde si cambió a concluido
+}
 </script>
 </body>
 </html>
+
 
 
 
