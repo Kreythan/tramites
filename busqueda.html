@@ -3,72 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Búsqueda y Reportes</title>
+    <title>Búsqueda y Gestión - Sistema</title>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f8f9fa; padding: 20px; color: #333; }
-        .container { max-width: 1250px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .container { max-width: 1300px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         
         .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         h2 { color: #1a73e8; margin: 0; }
         
         /* Botones */
-        .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-size: 14px; }
+        .btn { padding: 8px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; display: inline-flex; align-items: center; gap: 5px; text-decoration: none; font-size: 13px; }
         .btn-home { background: #5f6368; color: white; }
         .btn-print { background: #34a853; color: white; }
         .btn-excel { background: #fbbc05; color: #333; }
-        .btn-clear { background: #ea4335; color: white; padding: 8px 12px; font-size: 12px; }
-        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
-
-
-        /* Colores para los estados */
-        .concluido { background-color: #d4edda !important; color: #155724; }
-
-        /* Estilo para la celda de acciones */
-        .acciones-cell {
-            display: flex;
-            gap: 5px;
-            align-items: center;
-            white-space: nowrap;
-        }
-
-        .status-select {
-            padding: 4px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 12px;
-        }
-
-        .btn-del { background: #ea4335; color: white; border: none; padding: 5px 8px; border-radius: 5px; cursor: pointer; }
-        .btn-edit { background: #1a73e8; color: white; border: none; padding: 5px 8px; border-radius: 5px; cursor: pointer; }
-
-        .btn-del:hover, .btn-edit:hover { opacity: 0.8; }
+        .btn-clear { background: #ea4335; color: white; margin-left: 10px; }
+        .btn-del { background: #ea4335; color: white; padding: 5px 8px; }
         
-
-        .btn-del { background: #ea4335; color: white; padding: 5px 10px; font-size: 11px; }
-        .btn-edit { background: #1a73e8; color: white; padding: 5px 10px; font-size: 11px; }
-        .status-select { padding: 5px; border-radius: 5px; font-size: 11px; }
-        .concluido { background-color: #d4edda !important; } /* Fila verde si está terminado */
-
         .filters { display: flex; gap: 15px; margin-bottom: 10px; flex-wrap: wrap; background: #f1f4f9; padding: 20px; border-radius: 12px; align-items: flex-end; }
-        .filter-group { display: flex; flex-direction: column; flex: 1; min-width: 180px; }
+        .filter-group { display: flex; flex-direction: column; flex: 1; min-width: 150px; }
         .filter-group label { font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #1a73e8; }
         .filter-group input { padding: 10px; border: 1px solid #ccc; border-radius: 8px; outline: none; }
 
-        .stats { margin-bottom: 15px; font-size: 14px; color: #1a73e8; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .stats { margin-bottom: 15px; font-size: 14px; color: #1a73e8; font-weight: bold; }
 
         .table-container { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid #eee; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th, td { border: 1px solid #eee; padding: 10px; text-align: left; white-space: nowrap; }
+        th, td { border: 1px solid #eee; padding: 10px; text-align: left; }
         th { background: #1a73e8; color: white; position: sticky; top: 0; z-index: 10; }
-        tr:nth-child(even) { background: #f9f9f9; }
+        
+        /* Colores de Estado */
+        .concluido { background-color: #d4edda !important; }
+        .status-select { padding: 4px; border-radius: 5px; font-size: 11px; border: 1px solid #ccc; }
 
         @media print {
-            .filters, .header-actions .btn-home, .header-actions .btn-excel, .btn-clear, .stats { display: none; }
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; max-width: 100%; padding: 0; }
-            th { background: #eee !important; color: black !important; border: 1px solid #000; }
-            td { border: 1px solid #000; }
+            .filters, .header-actions .btn, .stats, .btn-del { display: none !important; }
+            .container { box-shadow: none; width: 100%; }
         }
     </style>
 </head>
@@ -77,115 +47,132 @@
 <div class="container">
     <div class="header-actions">
         <a href="index.html" class="btn btn-home">🏠 Inicio</a>
-        <h2>Pagina 2 de Busqueda</h2>
+        <h2>Gestión de Registros</h2>
         <div style="display: flex; gap: 10px;">
             <button onclick="exportarExcel()" class="btn btn-excel">📊 Excel</button>
-            <button onclick="window.print()" class="btn btn-print">🖨️ Imprimir PDF</button>
+            <button onclick="window.print()" class="btn btn-print">🖨️ PDF</button>
         </div>
     </div>
 
     <div class="filters">
-        <div class="filter-group"><label>Buscar por Fecha</label><input type="text" id="f_fecha" placeholder="Ej: 2026-01-11" onkeyup="filtrar()"></div>
-        <div class="filter-group"><label>Buscar por Placa</label><input type="text" id="f_placa" placeholder="Placa..." onkeyup="filtrar()"></div>
-        <div class="filter-group"><label>Buscar por Nombre</label><input type="text" id="f_nombre" placeholder="Cliente..." onkeyup="filtrar()"></div>
-        <button onclick="limpiarFiltros()" class="btn btn-clear">🧹 Limpiar Filtros</button>
+        <div class="filter-group"><label>Fecha</label><input type="text" id="f_fecha" onkeyup="filtrar()"></div>
+        <div class="filter-group"><label>Placa</label><input type="text" id="f_placa" onkeyup="filtrar()"></div>
+        <div class="filter-group"><label>Nombre</label><input type="text" id="f_nombre" onkeyup="filtrar()"></div>
+        <button onclick="limpiarFiltros()" class="btn btn-clear">🧹 Limpiar</button>
     </div>
 
-    <div class="stats">
-        📊 Registros encontrados: <span id="contador">0</span>
-    </div>
+    <div class="stats">Registros: <span id="contador">0</span></div>
 
-<div style="margin-bottom: 10px; font-weight: bold; color: #1a73e8;">
-    Registros encontrados: <span id="contador">0</span>
-</div>
-
-<div class="table-container">
-    <table id="tablaDatos">
-        <thead>
-            <tr id="headerRow">
-                </tr>
-        </thead>
-        <tbody id="cuerpoTabla">
-            </tbody>
-    </table>
-</div>
-    
     <div class="table-container">
         <table id="tablaDatos">
             <thead><tr id="headerRow"></tr></thead>
             <tbody id="cuerpoTabla">
-                <tr><td colspan="11" style="text-align:center;">Cargando base de datos...</td></tr>
+                <tr><td colspan="13" style="text-align:center;">Cargando base de datos...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
-     
-
 <script>
-function renderTable(headers, rows) {
-    const headerRow = document.getElementById('headerRow');
+    // URL DE TU APPS SCRIPT (Asegúrate de que sea la de la última implementación)
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzhBQFVdWSu2UWmQK4ljSu8_2vicPq4DCYsfXBSwfd2XKUIT54ibdCBpJ9e9Ek0u7cl/exec'; 
     
-    // 1. Creamos los encabezados y añadimos manualmente "Estado y Acciones"
-    let htmlHeaders = headers.map(h => `<th>${h}</th>`).join('');
-    headerRow.innerHTML = htmlHeaders + "<th>Estado y Acciones</th>";
-    
-    const cuerpo = document.getElementById('cuerpoTabla');
-    
-    if (rows.length === 0) {
-        cuerpo.innerHTML = "<tr><td colspan='13'>No se encontraron registros</td></tr>";
-        return;
+    let datosGlobales = [];
+    let encabezadosGlobales = [];
+
+    // 1. CARGAR DATOS (GET)
+    async function cargarDatos() {
+        try {
+            const respuesta = await fetch(scriptURL);
+            const data = await respuesta.json();
+            if (data && data.length > 0) {
+                encabezadosGlobales = data[0];
+                datosGlobales = data.slice(1).filter(row => row.join('').trim() !== '').reverse(); 
+                renderTable(encabezadosGlobales, datosGlobales);
+            }
+        } catch (e) {
+            document.getElementById('cuerpoTabla').innerHTML = "<tr><td colspan='13'>Error de conexión.</td></tr>";
+        }
     }
 
-    // 2. Dibujamos las filas
-    cuerpo.innerHTML = rows.map(row => {
-        const id = row[0]; // El Nº de registro
-        // El estado está en la columna 12 (índice 11). Si está vacío, ponemos "En proceso"
-        const estadoActual = row[11] || "En proceso";
-        const claseFila = (estadoActual === "Concluido") ? "class='concluido'" : "";
+    // 2. DIBUJAR TABLA CON BOTONES
+    function renderTable(headers, rows) {
+        const headerRow = document.getElementById('headerRow');
+        headerRow.innerHTML = headers.map(h => `<th>${h}</th>`).join('') + "<th>Acciones</th>";
+        
+        const cuerpo = document.getElementById('cuerpoTabla');
+        cuerpo.innerHTML = rows.map(row => {
+            const id = row[0]; // El Nº de registro
+            const estadoActual = row[11] || "En proceso"; // Columna L
+            const claseFila = (estadoActual === "Concluido") ? "class='concluido'" : "";
 
-        return `<tr ${claseFila}>
-            ${row.map(cell => `<td>${cell || ''}</td>`).join('')}
-            <td class="acciones-cell">
-                <select class="status-select" onchange="cambiarEstado(${id}, this.value)">
-                    <option value="En proceso" ${estadoActual === 'En proceso' ? 'selected' : ''}>⏳ Proceso</option>
-                    <option value="Concluido" ${estadoActual === 'Concluido' ? 'selected' : ''}>✅ Listo</option>
-                </select>
-                <button class="btn-edit" onclick="abrirEditor(${id})">✏️</button>
-                <button class="btn-del" onclick="eliminarFila(${id})">🗑️</button>
-            </td>
-        </tr>`;
-    }).join('');
+            return `<tr ${claseFila}>
+                ${row.map(cell => `<td>${cell || ''}</td>`).join('')}
+                <td style="display:flex; gap:5px;">
+                    <select class="status-select" onchange="cambiarEstado(${id}, this.value)">
+                        <option value="En proceso" ${estadoActual === 'En proceso' ? 'selected' : ''}>⏳</option>
+                        <option value="Concluido" ${estadoActual === 'Concluido' ? 'selected' : ''}>✅</option>
+                    </select>
+                    <button class="btn btn-del" onclick="eliminarFila(${id})">🗑️</button>
+                </td>
+            </tr>`;
+        }).join('');
+        document.getElementById('contador').innerText = rows.length;
+    }
 
-    document.getElementById('contador').innerText = rows.length;
-}
+    // 3. CAMBIAR ESTADO (POST)
+    async function cambiarEstado(id, nuevoEstado) {
+        try {
+            await fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ action: "update", id: id, estado: nuevoEstado })
+            });
+            alert("Estado actualizado.");
+            cargarDatos(); // Recargar para ver el cambio de color
+        } catch (e) { alert("Error al actualizar"); }
+    }
 
-async function eliminarFila(id) {
-    if(!confirm("¿Seguro que quieres eliminar el registro Nº " + id + "?")) return;
-    await fetch(scriptURL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify({ action: "delete", id: id })
-    });
-    alert("Eliminado. La página se recargará.");
-    location.reload();
-}
+    // 4. ELIMINAR FILA (POST)
+    async function eliminarFila(id) {
+        if(!confirm("¿Eliminar registro Nº " + id + "?")) return;
+        try {
+            await fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ action: "delete", id: id })
+            });
+            alert("Registro eliminado.");
+            cargarDatos();
+        } catch (e) { alert("Error al eliminar"); }
+    }
 
-async function cambiarEstado(id, nuevoEstado) {
-    await fetch(scriptURL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify({ action: "update", id: id, estado: nuevoEstado })
-    });
-    location.reload(); // Recargamos para que se pinte de verde si cambió a concluido
-}
+    // FUNCIONES DE APOYO (Filtros y Excel)
+    function filtrar() {
+        const fF = document.getElementById('f_fecha').value.toLowerCase();
+        const fP = document.getElementById('f_placa').value.toLowerCase();
+        const fN = document.getElementById('f_nombre').value.toLowerCase();
+        const filtrados = datosGlobales.filter(row => 
+            (row[1]||'').toString().toLowerCase().includes(fF) && 
+            (row[3]||'').toString().toLowerCase().includes(fP) && 
+            (row[4]||'').toString().toLowerCase().includes(fN)
+        );
+        renderTable(encabezadosGlobales, filtrados);
+    }
+
+    function limpiarFiltros() {
+        document.getElementById('f_fecha').value = "";
+        document.getElementById('f_placa').value = "";
+        document.getElementById('f_nombre').value = "";
+        renderTable(encabezadosGlobales, datosGlobales);
+    }
+
+    function exportarExcel() {
+        const wb = XLSX.utils.table_to_book(document.getElementById("tablaDatos"), {sheet: "Reporte"});
+        XLSX.writeFile(wb, "Reporte_Sistema.xlsx");
+    }
+
+    window.onload = cargarDatos;
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
