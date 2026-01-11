@@ -65,12 +65,14 @@
         </div>
     </div>
 
-    <div class="filters">
-        <div class="filter-group"><label>Filtrar por Fecha</label><input type="text" id="f_fecha" placeholder="AAAA-MM-DD" onkeyup="filtrar()"></div>
-        <div class="filter-group"><label>Filtrar por Placa</label><input type="text" id="f_placa" placeholder="Placa..." onkeyup="filtrar()"></div>
-        <div class="filter-group"><label>Filtrar por Nombre</label><input type="text" id="f_nombre" placeholder="Cliente..." onkeyup="filtrar()"></div>
-        <button onclick="limpiarFiltros()" class="btn btn-clear">🧹 Limpiar Filtros</button>
-    </div>
+    <div class="filter-group">
+    <label>Estado</label>
+    <select id="f_estado" onchange="filtrar()" style="padding: 10px; border: 1px solid #ccc; border-radius: 8px;">
+        <option value="">Todos</option>
+        <option value="En proceso">⏳ En proceso</option>
+        <option value="Concluido">✅ Concluido</option>
+    </select>
+</div>
 
     <div class="stats">📋 Total de registros encontrados: <span id="contador">0</span></div>
 
@@ -255,18 +257,23 @@ async function guardarCambios() {
     }
 
     // Lógica de Filtros
-    function filtrar() {
-        const fF = document.getElementById('f_fecha').value.toLowerCase();
-        const fP = document.getElementById('f_placa').value.toLowerCase();
-        const fN = document.getElementById('f_nombre').value.toLowerCase();
+        function filtrar() {
+            const fF = document.getElementById('f_fecha').value.toLowerCase();
+            const fP = document.getElementById('f_placa').value.toLowerCase();
+            const fN = document.getElementById('f_nombre').value.toLowerCase();
+            const fE = document.getElementById('f_estado').value; // Nuevo filtro de estado
+    
+            const filtrados = datosGlobales.filter(row => {
+                const coincideFecha = (row[1]||'').toString().toLowerCase().includes(fF);
+                const coincidePlaca = (row[3]||'').toString().toLowerCase().includes(fP);
+                const coincideNombre = (row[4]||'').toString().toLowerCase().includes(fN);
+                const coincideEstado = fE === "" || (row[11]||'En proceso') === fE;
         
-        const filtrados = datosGlobales.filter(row => 
-            (row[1]||'').toString().toLowerCase().includes(fF) && 
-            (row[3]||'').toString().toLowerCase().includes(fP) && 
-            (row[4]||'').toString().toLowerCase().includes(fN)
-        );
-        renderTable(encabezadosGlobales, filtrados);
-    }
+                return coincideFecha && coincidePlaca && coincideNombre && coincideEstado;
+        });
+    
+    renderTable(encabezadosGlobales, filtrados);
+}
 
     function limpiarFiltros() {
         document.getElementById('f_fecha').value = "";
@@ -317,6 +324,7 @@ async function guardarCambios() {
  </div>
 </body>
 </html>
+
 
 
 
