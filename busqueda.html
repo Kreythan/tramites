@@ -33,14 +33,25 @@
 </table>
 
 <script>
+    // Asegúrate de que no haya ningún carácter antes de 'const'
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwXg_ig4L4y2bL8E7aOaup07wFmSppftBY1i3211rUVwwd0cXZ6NkWkjYGW_GQpPoBg/exec';
     let datosGlobales = [];
 
     async function cargarDatos() {
-        const resp = await fetch(scriptURL);
-        const data = await resp.json();
-        datosGlobales = data.slice(1); // Guardamos datos sin encabezado
-        renderTable(data[0], datosGlobales);
+        try {
+            const resp = await fetch(scriptURL);
+            const data = await resp.json();
+            
+            if (data && data.length > 0) {
+                datosGlobales = data.slice(1); // Quitamos la fila de encabezados
+                renderTable(data[0], datosGlobales);
+            } else {
+                document.getElementById('cuerpoTabla').innerHTML = "<tr><td colspan='11'>No se encontraron datos.</td></tr>";
+            }
+        } catch (error) {
+            console.error("Error cargando datos:", error);
+            document.getElementById('cuerpoTabla').innerHTML = "<tr><td colspan='11'>Error de conexión. Verifica que el Script de Google esté publicado como 'Cualquiera'.</td></tr>";
+        }
     }
 
     function renderTable(headers, rows) {
@@ -57,17 +68,21 @@
         const fNombre = document.getElementById('f_nombre').value.toLowerCase();
 
         const filtrados = datosGlobales.filter(row => {
-            return (row[1].toString().toLowerCase().includes(fFecha)) &&
-                   (row[3].toString().toLowerCase().includes(fPlaca)) &&
-                   (row[4].toString().toLowerCase().includes(fNombre));
+            // Buscamos en las columnas: Fecha (1), Placa (3) y Nombre (4)
+            return (row[1] && row[1].toString().toLowerCase().includes(fFecha)) &&
+                   (row[3] && row[3].toString().toLowerCase().includes(fPlaca)) &&
+                   (row[4] && row[4].toString().toLowerCase().includes(fNombre));
         });
 
-        const headers = ["ID/Hora Registro", "Fecha", "Hora", "Placa", "Nombre Cliente", "Dra G", "Metodo Pago 1", "Dn Victor", "Metodo Pago 2", "Saldo", "Obs"];
+        // Los encabezados manuales por si acaso el filtro los necesita
+        const headers = ["ID/Registro", "Fecha", "Hora", "Placa", "Nombre Cliente", "Dra G", "Metodo Pago 1", "Dn Victor", "Metodo Pago 2", "Saldo", "Obs"];
         renderTable(headers, filtrados);
     }
 
+    // Iniciar la carga
     cargarDatos();
 </script>
 </body>
 
 </html>
+
