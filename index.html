@@ -3,74 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pagina Principal - Registro</title>
+    <title>Registro Automático</title>
     <style>
         body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
         .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 800px; }
         h2 { text-align: center; color: #1a73e8; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
-        .field { display: flex; flex-direction: column; }
-        label { font-size: 14px; margin-bottom: 5px; font-weight: bold; }
-        input, textarea { padding: 10px; border: 1px solid #ccc; border-radius: 20px; outline: none; }
-        input:focus { border-color: #1a73e8; }
-        .btn-save { grid-column: 1 / -1; background: #1a73e8; color: white; border: none; padding: 12px; border-radius: 20px; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        .nav-link { display: block; text-align: center; margin-top: 20px; color: #5f6368; text-decoration: none; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .field { display: flex; flex-direction: column; margin-bottom: 5px; }
+        label { font-size: 13px; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input, select, textarea { padding: 10px; border: 1px solid #ccc; border-radius: 15px; outline: none; }
+        .input-bs { position: relative; }
+        .input-bs::before { content: "Bs. "; position: absolute; left: 10px; top: 35px; font-size: 14px; color: #666; }
+        .input-bs input { padding-left: 35px; }
+        .msg-obs { color: #d93025; font-size: 11px; margin-top: 5px; display: none; }
+        .btn-save { grid-column: 1 / -1; background: #1a73e8; color: white; border: none; padding: 12px; border-radius: 20px; cursor: pointer; font-size: 16px; margin-top: 15px; }
+        .btn-save:disabled { background: #ccc; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <h2>Pagina Principal</h2>
-    <div class="grid">
-        <div class="field"><label>Fecha</label><input type="date" id="fecha"></div>
-        <div class="field"><label>Hora</label><input type="time" id="hora"></div>
-        <div class="field"><label>Placa</label><input type="text" id="placa"></div>
-        <div class="field"><label>Nombre Cliente</label><input type="text" id="nombre_cliente"></div>
-        <div class="field"><label>Dra G</label><input type="text" id="dra_g"></div>
-        <div class="field"><label>Metodo de Pago</label><input type="text" id="metodo_pago_1"></div>
-        <div class="field"><label>Dn Victor</label><input type="text" id="dn_victor"></div>
-        <div class="field"><label>Metodo de Pago</label><input type="text" id="metodo_pago_2"></div>
-        <div class="field"><label>Saldo</label><input type="number" id="saldo"></div>
-        <div class="field" style="grid-column: span 2;"><label>Obs</label><textarea id="observaciones"></textarea></div>
-        <button class="btn-save" onclick="enviarDatos()">Guardar</button>
-    </div>
-    <a href="busqueda.html" class="nav-link">Ir a Buscar Registros →</a>
+    <form id="registroForm">
+        <div class="grid">
+            <div class="field"><label>Fecha</label><input type="date" id="fecha" readonly></div>
+            <div class="field"><label>Hora</label><input type="time" id="hora" readonly></div>
+            
+            <div class="field"><label>Placa *</label><input type="text" id="placa" required></div>
+            <div class="field"><label>Nombre Cliente *</label><input type="text" id="nombre_cliente" required></div>
+
+            <div class="field input-bs"><label>Dra G *</label><input type="number" id="dra_g" step="0.01" required oninput="calcularSaldo()"></div>
+            
+            <div class="field">
+                <label>Metodo de Pago 1 *</label>
+                <select id="metodo_pago_1" required onchange="verificarMetodo(this, 'msg1')">
+                    <option value="">Seleccione...</option>
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="QR">QR</option>
+                    <option value="Efectivo y QR">Efectivo y QR</option>
+                </select>
+                <span id="msg1" class="msg-obs">⚠️ agregar los montos en Obs</span>
+            </div>
+
+            <div class="field input-bs"><label>Dn Victor *</label><input type="number" id="dn_victor" step="0.01" required oninput="calcularSaldo()"></div>
+
+            <div class="field">
+                <label>Metodo de Pago 2 *</label>
+                <select id="metodo_pago_2" required onchange="verificarMetodo(this, 'msg2')">
+                    <option value="">Seleccione...</option>
+                    <option value="Efectivo">Efectivo</option>
+                    <option value="QR">QR</option>
+                    <option value="Efectivo y QR">Efectivo y QR</option>
+                </select>
+                <span id="msg2" class="msg-obs">⚠️ agregar los montos en Obs</span>
+            </div>
+
+            <div class="field input-bs"><label>Saldo (Automático)</label><input type="text" id="saldo" readonly value="0.00"></div>
+            
+            <div class="field" style="grid-column: span 2;"><label>Obs (Opcional)</label><textarea id="observaciones" rows="2"></textarea></div>
+
+            <button type="submit" class="btn-save" id="btnGuardar">Guardar Registro</button>
+        </div>
+    </form>
+    <p style="text-align:center"><a href="busqueda.html" style="text-decoration:none; color:#1a73e8;">Ver Historial →</a></p>
 </div>
 
 <script>
-    async function enviarDatos() {
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwXg_ig4L4y2bL8E7aOaup07wFmSppftBY1i3211rUVwwd0cXZ6NkWkjYGW_GQpPoBg/exec';
-        const btn = document.querySelector('.btn-save');
-        btn.innerText = 'Guardando...';
-        btn.disabled = true;
+    // 1. Cargar Fecha y Hora automáticas al abrir
+    const ahora = new Date();
+    document.getElementById('fecha').value = ahora.toISOString().split('T')[0];
+    document.getElementById('hora').value = ahora.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
+    // 2. Calcular Saldo automáticamente
+    function calcularSaldo() {
+        const draG = parseFloat(document.getElementById('dra_g').value) || 0;
+        const dnVictor = parseFloat(document.getElementById('dn_victor').value) || 0;
+        const total = draG - dnVictor;
+        document.getElementById('saldo').value = total.toFixed(2);
+    }
+
+    // 3. Mostrar mensaje si es Efectivo y QR
+    function verificarMetodo(select, msgId) {
+        const msg = document.getElementById(msgId);
+        msg.style.display = (select.value === "Efectivo y QR") ? "block" : "none";
+    }
+
+    // 4. Enviar datos y Limpiar formulario
+    document.getElementById('registroForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnGuardar');
+        btn.disabled = true;
+        btn.innerText = 'Enviando...';
+
+        const scriptURL = 'TU_URL_DE_APPS_SCRIPT_AQUI';
+        
         const data = {
             fecha: document.getElementById('fecha').value,
             hora: document.getElementById('hora').value,
             placa: document.getElementById('placa').value,
             nombre_cliente: document.getElementById('nombre_cliente').value,
-            dra_g: document.getElementById('dra_g').value,
+            dra_g: "Bs. " + document.getElementById('dra_g').value,
             metodo_pago_1: document.getElementById('metodo_pago_1').value,
-            dn_victor: document.getElementById('dn_victor').value,
+            dn_victor: "Bs. " + document.getElementById('dn_victor').value,
             metodo_pago_2: document.getElementById('metodo_pago_2').value,
-            saldo: document.getElementById('saldo').value,
+            saldo: "Bs. " + document.getElementById('saldo').value,
             observaciones: document.getElementById('observaciones').value
         };
 
         try {
-            await fetch(scriptURL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(data)
-            });
-            alert('¡Datos guardados con éxito!');
-            location.reload();
-        } catch (e) {
+            await fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+            alert('¡Guardado correctamente!');
+            document.getElementById('registroForm').reset(); // Limpia formulario
+            calcularSaldo(); // Resetea el saldo a 0
+            // Recargar fecha y hora para el siguiente
+            const n = new Date();
+            document.getElementById('fecha').value = n.toISOString().split('T')[0];
+            document.getElementById('hora').value = n.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        } catch (error) {
             alert('Error al guardar');
+        } finally {
             btn.disabled = false;
+            btn.innerText = 'Guardar Registro';
         }
-    }
+    };
 </script>
 </body>
-
 </html>
