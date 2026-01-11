@@ -21,6 +21,30 @@
         .btn:hover { opacity: 0.8; transform: translateY(-1px); }
 
 
+        /* Colores para los estados */
+        .concluido { background-color: #d4edda !important; color: #155724; }
+
+        /* Estilo para la celda de acciones */
+        .acciones-cell {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+        .status-select {
+            padding: 4px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 12px;
+        }
+
+        .btn-del { background: #ea4335; color: white; border: none; padding: 5px 8px; border-radius: 5px; cursor: pointer; }
+        .btn-edit { background: #1a73e8; color: white; border: none; padding: 5px 8px; border-radius: 5px; cursor: pointer; }
+
+        .btn-del:hover, .btn-edit:hover { opacity: 0.8; }
+        
+
         .btn-del { background: #ea4335; color: white; padding: 5px 10px; font-size: 11px; }
         .btn-edit { background: #1a73e8; color: white; padding: 5px 10px; font-size: 11px; }
         .status-select { padding: 5px; border-radius: 5px; font-size: 11px; }
@@ -74,6 +98,17 @@
 <div style="margin-bottom: 10px; font-weight: bold; color: #1a73e8;">
     Registros encontrados: <span id="contador">0</span>
 </div>
+
+<div class="table-container">
+    <table id="tablaDatos">
+        <thead>
+            <tr id="headerRow">
+                </tr>
+        </thead>
+        <tbody id="cuerpoTabla">
+            </tbody>
+    </table>
+</div>
     
     <div class="table-container">
         <table id="tablaDatos">
@@ -85,31 +120,46 @@
     </div>
 </div>
 
-
+        .btn-del { background: #ea4335; color: white; padding: 5px 10px; font-size: 11px; }
+        .btn-edit { background: #1a73e8; color: white; padding: 5px 10px; font-size: 11px; }
+        .status-select { padding: 5px; border-radius: 5px; font-size: 11px; }
+        .concluido { background-color: #d4edda !important; } /* Fila verde si está terminado */
 
 <script>
 function renderTable(headers, rows) {
     const headerRow = document.getElementById('headerRow');
-    // Añadimos la columna de Acciones al encabezado si no existe
-    headerRow.innerHTML = headers.map(h => `<th>${h}</th>`).join('') + "<th>Acciones</th>";
+    
+    // 1. Creamos los encabezados y añadimos manualmente "Estado y Acciones"
+    let htmlHeaders = headers.map(h => `<th>${h}</th>`).join('');
+    headerRow.innerHTML = htmlHeaders + "<th>Estado y Acciones</th>";
     
     const cuerpo = document.getElementById('cuerpoTabla');
+    
+    if (rows.length === 0) {
+        cuerpo.innerHTML = "<tr><td colspan='13'>No se encontraron registros</td></tr>";
+        return;
+    }
+
+    // 2. Dibujamos las filas
     cuerpo.innerHTML = rows.map(row => {
-        const id = row[0];
+        const id = row[0]; // El Nº de registro
+        // El estado está en la columna 12 (índice 11). Si está vacío, ponemos "En proceso"
         const estadoActual = row[11] || "En proceso";
         const claseFila = (estadoActual === "Concluido") ? "class='concluido'" : "";
 
         return `<tr ${claseFila}>
             ${row.map(cell => `<td>${cell || ''}</td>`).join('')}
-            <td>
+            <td class="acciones-cell">
                 <select class="status-select" onchange="cambiarEstado(${id}, this.value)">
                     <option value="En proceso" ${estadoActual === 'En proceso' ? 'selected' : ''}>⏳ Proceso</option>
                     <option value="Concluido" ${estadoActual === 'Concluido' ? 'selected' : ''}>✅ Listo</option>
                 </select>
-                <button class="btn btn-del" onclick="eliminarFila(${id})">🗑️</button>
+                <button class="btn-edit" onclick="abrirEditor(${id})">✏️</button>
+                <button class="btn-del" onclick="eliminarFila(${id})">🗑️</button>
             </td>
         </tr>`;
     }).join('');
+
     document.getElementById('contador').innerText = rows.length;
 }
 
@@ -135,6 +185,7 @@ async function cambiarEstado(id, nuevoEstado) {
 </script>
 </body>
 </html>
+
 
 
 
