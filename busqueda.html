@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pagina 2 de Busqueda</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f8f9fa; }
+        .filters { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; background: white; padding: 20px; border-radius: 10px; }
+        .filter-group { display: flex; flex-direction: column; }
+        input { padding: 8px; border-radius: 15px; border: 1px solid #ccc; }
+        table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #1a73e8; color: white; }
+        tr:nth-child(even) { background: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h2>Pagina 2 de Busqueda</h2>
+<div class="filters">
+    <div class="filter-group"><label>Buscar por fecha</label><input type="text" id="f_fecha" onkeyup="filtrar()"></div>
+    <div class="filter-group"><label>Buscar por Placa</label><input type="text" id="f_placa" onkeyup="filtrar()"></div>
+    <div class="filter-group"><label>Buscar por Nombre</label><input type="text" id="f_nombre" onkeyup="filtrar()"></div>
+</div>
+
+<table id="tablaDatos">
+    <thead>
+        <tr id="header"></tr>
+    </thead>
+    <tbody id="cuerpoTabla">
+        <tr><td colspan="11">Cargando datos de Google Sheets...</td></tr>
+    </tbody>
+</table>
+
+<script>
+    const scriptURL = https://script.google.com/macros/s/AKfycbwXg_ig4L4y2bL8E7aOaup07wFmSppftBY1i3211rUVwwd0cXZ6NkWkjYGW_GQpPoBg/exec;
+    let datosGlobales = [];
+
+    async function cargarDatos() {
+        const resp = await fetch(scriptURL);
+        const data = await resp.json();
+        datosGlobales = data.slice(1); // Guardamos datos sin encabezado
+        renderTable(data[0], datosGlobales);
+    }
+
+    function renderTable(headers, rows) {
+        const headerRow = document.getElementById('header');
+        headerRow.innerHTML = headers.map(h => `<th>${h}</th>`).join('');
+        
+        const cuerpo = document.getElementById('cuerpoTabla');
+        cuerpo.innerHTML = rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('');
+    }
+
+    function filtrar() {
+        const fFecha = document.getElementById('f_fecha').value.toLowerCase();
+        const fPlaca = document.getElementById('f_placa').value.toLowerCase();
+        const fNombre = document.getElementById('f_nombre').value.toLowerCase();
+
+        const filtrados = datosGlobales.filter(row => {
+            return (row[1].toString().toLowerCase().includes(fFecha)) &&
+                   (row[3].toString().toLowerCase().includes(fPlaca)) &&
+                   (row[4].toString().toLowerCase().includes(fNombre));
+        });
+
+        const headers = ["ID/Hora Registro", "Fecha", "Hora", "Placa", "Nombre Cliente", "Dra G", "Metodo Pago 1", "Dn Victor", "Metodo Pago 2", "Saldo", "Obs"];
+        renderTable(headers, filtrados);
+    }
+
+    cargarDatos();
+</script>
+</body>
+</html>
