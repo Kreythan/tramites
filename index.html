@@ -119,10 +119,12 @@ window.onload = () => {
         btn.innerText = 'Guardando en la Nube...';
 
         // Estructura de datos según los encabezados de tu hoja
+       // Dentro de tu función enviarDatos en index.html
         const data = {
-            fecha: document.getElementById('fecha').value,
-            hora: document.getElementById('hora').value,
-            placa: document.getElementById('placa').value,
+            fecha: document.getElementById('fecha').value.toString(), // Forzamos a que sea texto
+            hora: document.getElementById('hora').value.toString(),
+            placa: document.getElementById('placa').value.toString(),
+                // ... resto de los campos
             nombre_cliente: document.getElementById('nombre_cliente').value,
             dra_g: "Bs. " + document.getElementById('dra_g').value,
             metodo_pago_1: document.getElementById('metodo_pago_1').value,
@@ -166,6 +168,7 @@ window.onload = () => {
 
 </body>
 </html>
+
 
 
 
