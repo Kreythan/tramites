@@ -76,10 +76,25 @@
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwXg_ig4L4y2bL8E7aOaup07wFmSppftBY1i3211rUVwwd0cXZ6NkWkjYGW_GQpPoBg/exec';
 
     // 1. Cargar Fecha y Hora automáticas al abrir
+   // Cargar Fecha y Hora automáticas para Santa Cruz, Bolivia
     window.onload = () => {
         const ahora = new Date();
-        document.getElementById('fecha').value = ahora.toISOString().split('T')[0];
-        document.getElementById('hora').value = ahora.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        
+        // Obtener fecha en formato YYYY-MM-DD ajustada a la zona horaria local
+        const year = ahora.toLocaleString("es-BO", {year: 'numeric', timeZone: "America/La_Paz"});
+        const month = ahora.toLocaleString("es-BO", {month: '2-digit', timeZone: "America/La_Paz"});
+        const day = ahora.toLocaleString("es-BO", {day: '2-digit', timeZone: "America/La_Paz"});
+        
+        // Obtener hora en formato HH:mm
+        const horaLocal = ahora.toLocaleTimeString('es-BO', { 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            hour12: false,
+            timeZone: "America/La_Paz" 
+        });
+
+        document.getElementById('fecha').value = `${year}-${month}-${day}`;
+        document.getElementById('hora').value = horaLocal;
     };
 
     // 2. Calcular Saldo automáticamente
@@ -152,3 +167,4 @@
 
 </body>
 </html>
+
