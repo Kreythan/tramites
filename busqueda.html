@@ -325,11 +325,12 @@ async function guardarCambios() {
 }
 
     function limpiarFiltros() {
-        document.getElementById('f_fecha').value = "";
-        document.getElementById('f_placa').value = "";
-        document.getElementById('f_nombre').value = "";
-        renderTable(encabezadosGlobales, datosGlobales);
-    }
+    document.getElementById('f_fecha').value = "";
+    document.getElementById('f_placa').value = "";
+    document.getElementById('f_nombre').value = "";
+    document.getElementById('f_estado').value = "";
+    renderTable(encabezadosGlobales, datosGlobales);
+}
 
     function exportarExcel() {
         const table = document.getElementById("tablaDatos");
@@ -373,6 +374,7 @@ async function guardarCambios() {
  </div>
 </body>
 </html>
+
 
 
 
