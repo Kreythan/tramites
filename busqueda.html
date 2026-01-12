@@ -19,6 +19,36 @@
         .btn-clear { background: #ea4335; color: white; }
         .btn-del { background: #ea4335; color: white; padding: 6px 10px; font-size: 12px; }
 
+
+        .filters { 
+    display: flex; 
+    gap: 15px; 
+    margin-bottom: 20px; 
+    flex-wrap: wrap; 
+    background: #e8f0fe; 
+    padding: 20px; 
+    border-radius: 12px; 
+    align-items: flex-end; 
+}
+.filter-group { 
+    display: flex; 
+    flex-direction: column; 
+    flex: 1; 
+    min-width: 150px; 
+}
+.filter-group label { 
+    font-size: 12px; 
+    font-weight: bold; 
+    margin-bottom: 5px; 
+    color: #1a73e8; 
+}
+.filter-group input, .filter-group select { 
+    padding: 10px; 
+    border: 1px solid #ccc; 
+    border-radius: 8px; 
+    outline: none; 
+}
+        
         .filters { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; background: #e8f0fe; padding: 20px; border-radius: 12px; align-items: flex-end; }
         .filter-group { display: flex; flex-direction: column; flex: 1; min-width: 180px; }
         .filter-group label { font-size: 13px; font-weight: bold; margin-bottom: 6px; color: #1a73e8; }
@@ -65,13 +95,28 @@
         </div>
     </div>
 
+    <div class="filters">
     <div class="filter-group">
-    <label>Estado</label>
-    <select id="f_estado" onchange="filtrar()" style="padding: 10px; border: 1px solid #ccc; border-radius: 8px;">
-        <option value="">Todos</option>
-        <option value="En proceso">⏳ En proceso</option>
-        <option value="Concluido">✅ Concluido</option>
-    </select>
+        <label>Fecha</label>
+        <input type="text" id="f_fecha" placeholder="Ej: 2026-01-11" onkeyup="filtrar()">
+    </div>
+    <div class="filter-group">
+        <label>Placa</label>
+        <input type="text" id="f_placa" placeholder="Buscar placa..." onkeyup="filtrar()">
+    </div>
+    <div class="filter-group">
+        <label>Nombre Cliente</label>
+        <input type="text" id="f_nombre" placeholder="Buscar nombre..." onkeyup="filtrar()">
+    </div>
+    <div class="filter-group">
+        <label>Estado</label>
+        <select id="f_estado" onchange="filtrar()">
+            <option value="">Todos</option>
+            <option value="En proceso">⏳ En proceso</option>
+            <option value="Concluido">✅ Concluido</option>
+        </select>
+    </div>
+    <button onclick="limpiarFiltros()" class="btn btn-clear">🧹 Limpiar</button>
 </div>
 
     <div class="stats">📋 Total de registros encontrados: <span id="contador">0</span></div>
@@ -328,6 +373,7 @@ async function guardarCambios() {
  </div>
 </body>
 </html>
+
 
 
 
